@@ -1,0 +1,26 @@
+{
+  "name": "build-stuff-jmeter",
+  "version": "1.0.0",
+  "description": "App to test performance",
+  "main": "index.js",
+  "scripts": {
+	"start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eligijus-petrikonis/build-stuff-jmeter.git"
+  },
+  "keywords": [
+    "build-stuff",
+    "jmeter",
+    "github",
+    "performance"
+  ],
+  "author": "Eligijus Petrikonis",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eligijus-petrikonis/build-stuff-jmeter/issues"
+  },
+  "homepage": "https://github.com/eligijus-petrikonis/build-stuff-jmeter#readme"
+}
