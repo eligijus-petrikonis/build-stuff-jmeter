@@ -1,0 +1,18 @@
+name: JMeter tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    runs-on: [ linux ]
+    steps:
+      - name: Cleanup
+        shell: bash
+        run: rm -rf {,.[!.],..?}*
+      - name: Setup Java JDK
+        uses: actions/setup-java@v5.0.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          
