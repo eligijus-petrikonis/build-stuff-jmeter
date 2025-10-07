@@ -5,7 +5,7 @@ on:
 
 jobs:
   run-tests:
-    runs-on: [ linux ]
+    runs-on: [ ubuntu-latest ]
     steps:
       - name: Cleanup
         shell: bash
