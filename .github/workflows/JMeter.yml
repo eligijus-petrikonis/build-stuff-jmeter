@@ -1,0 +1,22 @@
+name: JMeter tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    runs-on: [ ubuntu-latest ]
+    steps:
+      - name: Cleanup
+        shell: bash
+        run: rm -rf {,.[!.],..?}*
+      - name: Setup Java JDK
+        uses: actions/setup-java@v5.0.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Test curl
+        run: curl http://www.example.com/
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
+          
