@@ -1,4 +1,4 @@
-name: JMeter tests
+name: JMeter tests - Flow
 
 on:
   workflow_dispatch:
@@ -31,7 +31,7 @@ jobs:
           ls
       - name: Run jmx script
         run: |
-          ./apache-jmeter-5.6.3/bin/jmeter.sh -n -t "jmeter-tests/demo-app-tests.jmx" -l test_run.jtl -e -o test_report
+          ./apache-jmeter-5.6.3/bin/jmeter.sh -n -t "jmeter-tests/demo-app-flow-tests.jmx" -l test_run.jtl -e -o test_report
           mv test_run.jtl test_report/test_run.jtl
       - name: Upload jmeter test results directory
         uses: actions/upload-artifact@v4

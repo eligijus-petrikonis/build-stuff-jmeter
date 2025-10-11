@@ -1,0 +1,50 @@
+name: JMeter tests - ALL
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Cleanup
+        shell: bash
+        run: rm -rf {,.[!.],..?}*
+      - name: Setup Java JDK
+        uses: actions/setup-java@v5.0.0
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Test curl
+        run: curl http://build-stuff-jmeter-test.eu-4.evennode.com/
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
+      - name: Install Jmeter and check version
+        run: |
+          curl https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz --output jmeter.tgz
+          ls
+          tar -xf jmeter.tgz
+          ./apache-jmeter-5.6.3/bin/jmeter.sh -n -v
+      - name: Display files
+        run: |
+          pwd
+          ls
+      - name: Run jmx script
+        run: |
+          ./apache-jmeter-5.6.3/bin/jmeter.sh -n -t "jmeter-tests/demo-app-all-tests.jmx" -l test_run.jtl -e -o test_report
+          mv test_run.jtl test_report/test_run.jtl
+      - name: Upload jmeter test results directory
+        uses: actions/upload-artifact@v4
+        with:
+          name: Test_report
+          path: test_report
+      - name: Display files
+        run: |
+          pwd
+          ls
+          cd test_report
+          pwd
+          ls
+      - name: Cleanup
+        shell: bash
+        run: rm -rf {,.[!.],..?}*
