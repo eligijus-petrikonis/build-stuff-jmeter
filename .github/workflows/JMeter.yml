@@ -5,7 +5,7 @@ on:
 
 jobs:
   run-tests:
-    runs-on: [ ubuntu-latest ]
+    runs-on: [ubuntu-latest]
     steps:
       - name: Cleanup
         shell: bash
@@ -13,10 +13,12 @@ jobs:
       - name: Setup Java JDK
         uses: actions/setup-java@v5.0.0
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: "temurin"
+          java-version: "21"
       - name: Test curl
-        run: curl http://www.example.com/
+        run: curl http://build-stuff-jmeter-test.eu-4.evennode.coma/
       - name: Checkout
         uses: actions/checkout@v5.0.0
-          
+      - name: Cleanup
+        shell: bash
+        run: rm -rf {,.[!.],..?}*

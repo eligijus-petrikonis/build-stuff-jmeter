@@ -22,4 +22,11 @@
 ### How to setup JMeter for local usage?
 * Download LTS Java JDK from [URL](https://www.oracle.com/se/java/technologies/downloads/)
 * Setup Java for your PC, if you need more details, you can find help [here](https://www.java.com/en/download/help/index_installing.html)
-* Download latest JMeter from [URL](https://jmeter.apache.org/download_jmeter.cgi)
+* Most important to set JAVA_HOME and path to point to JDK installed place
+* Download latest JMeter from [URL](https://jmeter.apache.org/download_jmeter.cgi) - if you need more detailed instructions I recommend to use: [URL](https://www.tutorialspoint.com/jmeter/jmeter_quick_guide.htm)
+* Extract binaries in your preferred place
+* Open extracted JMeter folder
+* Navigate to `bin`
+* Find and run `jmeter.bat`
+* Should open JMeter application
+
