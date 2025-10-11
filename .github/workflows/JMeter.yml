@@ -29,7 +29,7 @@ jobs:
         run: |
           pwd
           ls
-          - name: Run jmx script
+      - name: Run jmx script
         run: |
           ./apache-jmeter-5.6.3/bin/jmeter.sh -n -t "jmeter-tests/demo-app-tests.jmx" -l test_run.jtl -e -o test_report
           mv test_run.jtl test_report/test_run.jtl
