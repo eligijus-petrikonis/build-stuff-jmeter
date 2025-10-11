@@ -17,6 +17,8 @@ jobs:
           java-version: "21"
       - name: Test curl
         run: curl http://build-stuff-jmeter-test.eu-4.evennode.com/
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
       - name: Install Jmeter and check version
         run: |
           curl https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz --output jmeter.tgz
@@ -43,8 +45,6 @@ jobs:
           cd test_report
           pwd
           ls
-      - name: Checkout
-        uses: actions/checkout@v5.0.0
       - name: Cleanup
         shell: bash
         run: rm -rf {,.[!.],..?}*
