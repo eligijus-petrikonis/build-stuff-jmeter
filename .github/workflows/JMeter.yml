@@ -34,7 +34,7 @@ jobs:
           ./apache-jmeter-5.6.3/bin/jmeter.sh -n -t "jmeter-tests/demo-app-tests.jmx" -l test_run.jtl -e -o test_report
           mv test_run.jtl test_report/test_run.jtl
       - name: Upload jmeter test results directory
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Test_report
           path: test_report
