@@ -16,7 +16,7 @@ jobs:
           distribution: "temurin"
           java-version: "21"
       - name: Test curl
-        run: curl http://build-stuff-jmeter-test.eu-4.evennode.coma/
+        run: curl http://build-stuff-jmeter-test.eu-4.evennode.com/
       - name: Checkout
         uses: actions/checkout@v5.0.0
       - name: Cleanup
