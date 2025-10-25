@@ -1,43 +1,62 @@
+# Workflow for deploying static content to GitHub Pages
 name: JMeter tests - ALL
 
 on:
+  # Runs on pushes targeting the branch
+  push:
+    branches: ["main"]
+  # Runs on manual triggers
   workflow_dispatch:
+  # Runs on schedule
+  schedule:
+     - cron: "0 9 * * *"
 
 jobs:
+  # Single job to run tests
   run-tests:
+    # Uses ubuntu OS
     runs-on: [ubuntu-latest]
     steps:
+      # Clean up runners from previous runs
       - name: Cleanup
         shell: bash
         run: rm -rf {,.[!.],..?}*
+      # Setup Java - required for JMeter
       - name: Setup Java JDK
         uses: actions/setup-java@v5.0.0
         with:
           distribution: "temurin"
           java-version: "21"
+      # Test that application is accessible
       - name: Test curl
         run: curl http://build-stuff-jmeter-test.eu-4.evennode.com/
+      # Checkout repository
       - name: Checkout
         uses: actions/checkout@v5.0.0
+      # Download and install JMeter
       - name: Install Jmeter and check version
         run: |
           curl https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz --output jmeter.tgz
           ls
           tar -xf jmeter.tgz
           ./apache-jmeter-5.6.3/bin/jmeter.sh -n -v
+      # Display files to verify that everything is in place
       - name: Display files
         run: |
           pwd
           ls
+      # Run performance test by using passed test file to run
       - name: Run jmx script
         run: |
           ./apache-jmeter-5.6.3/bin/jmeter.sh -n -t "jmeter-tests/demo-app-all-tests.jmx" -l test_run.jtl -e -o test_report
           mv test_run.jtl test_report/test_run.jtl
+      # Upload jmeter test results as zip
       - name: Upload jmeter test results directory
         uses: actions/upload-artifact@v4
         with:
           name: Test_report
           path: test_report
+      # Display files to verify that everything is in place
       - name: Display files
         run: |
           pwd
@@ -45,6 +64,19 @@ jobs:
           cd test_report
           pwd
           ls
+      # Check if any failures are recorded in the JTL file
+      - name: Parse JMeter results
+        run: |
+          cd test_report
+          failures=$(awk -F',' 'NR > 1 && $8 != "true" {exit 1}' test_run.jtl && echo 0 || echo 1)
+          echo "failures=$failures" >> $GITHUB_ENV
+      # Fail if there is any failure
+      - name: Fail if there are JMeter test failures
+        if: env.failures == '1'
+        run: exit 1
+      # Verify throughput against thresholds
+      # TODO: Add this step
+      # Clean up runners from previous runs
       - name: Cleanup
         shell: bash
         run: rm -rf {,.[!.],..?}*
