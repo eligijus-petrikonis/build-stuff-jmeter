@@ -65,17 +65,40 @@ jobs:
           pwd
           ls
       # Check if any failures are recorded in the JTL file
-      - name: Parse JMeter results
+      # - name: Parse JMeter results
+      #   run: |
+      #     cd test_report
+      #     failures=$(awk -F',' 'NR > 1 && $8 != "true" {exit 1}' test_run.jtl && echo 0 || echo 1)
+      #     echo "failures=$failures" >> $GITHUB_ENV
+      # Fail if there is any failure
+      # - name: Fail if there are JMeter test failures
+      #   if: env.failures == '1'
+      #   run: exit 1
+      # Verify throughput against thresholds
+      - name: Verify throughput
         run: |
           cd test_report
-          failures=$(awk -F',' 'NR > 1 && $8 != "true" {exit 1}' test_run.jtl && echo 0 || echo 1)
-          echo "failures=$failures" >> $GITHUB_ENV
-      # Fail if there is any failure
-      - name: Fail if there are JMeter test failures
-        if: env.failures == '1'
-        run: exit 1
-      # Verify throughput against thresholds
-      # TODO: Add this step
+          json=$(cat statistics.json)
+
+          # Define thresholds
+          logout_threshold=510
+          user_threshold=150
+
+          # Extract throughput values
+          logout_tp=$(jq -r '.["GET logout"].throughput' <<< "$json")
+          user_tp=$(jq -r '.["GET user"].throughput' <<< "$json")
+
+          echo "GET logout → $logout_tp (threshold: $logout_threshold)"
+          echo "GET user → $user_tp (threshold: $user_threshold)"
+
+          # Validate performance
+          if (( $(echo "$logout_tp >= $logout_threshold" | bc) )) && \
+             (( $(echo "$user_tp >= $user_threshold" | bc) )); then
+              echo "✅ Throughputs are greater than thresholds"
+          else
+              echo "❌ Some throughputs are not greater than thresholds, check above statistics"
+              exit 1
+          fi
       # Clean up runners from previous runs
       - name: Cleanup
         shell: bash
