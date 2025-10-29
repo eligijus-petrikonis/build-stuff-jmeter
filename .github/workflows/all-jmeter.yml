@@ -3,8 +3,8 @@ name: JMeter tests - ALL
 
 on:
   # Runs on pushes targeting the branch
-  push:
-    branches: ["main"]
+  # push:
+    # branches: ["main"]
   # Runs on manual triggers
   workflow_dispatch:
   # Runs on schedule
