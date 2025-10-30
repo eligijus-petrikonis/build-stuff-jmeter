@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   # Runs on schedule
   schedule:
-     - cron: "0 9 * * *"
+     - cron: "40 8 * * *"
 
 jobs:
   # Single job to run tests
