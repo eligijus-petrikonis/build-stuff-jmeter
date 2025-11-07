@@ -1,43 +1,62 @@
+# Workflow for deploying static content to GitHub Pages
 name: JMeter tests - ALL
 
 on:
+  # Runs on pushes targeting the branch
+  # push:
+    # branches: ["main"]
+  # Runs on manual triggers
   workflow_dispatch:
+  # Runs on schedule
+  schedule:
+     - cron: "40 8 * * *"
 
 jobs:
+  # Single job to run tests
   run-tests:
+    # Uses ubuntu OS
     runs-on: [ubuntu-latest]
     steps:
+      # Clean up runners from previous runs
       - name: Cleanup
         shell: bash
         run: rm -rf {,.[!.],..?}*
+      # Setup Java - required for JMeter
       - name: Setup Java JDK
         uses: actions/setup-java@v5.0.0
         with:
           distribution: "temurin"
           java-version: "21"
+      # Test that application is accessible
       - name: Test curl
         run: curl http://build-stuff-jmeter-test.eu-4.evennode.com/
+      # Checkout repository
       - name: Checkout
         uses: actions/checkout@v5.0.0
+      # Download and install JMeter
       - name: Install Jmeter and check version
         run: |
           curl https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz --output jmeter.tgz
           ls
           tar -xf jmeter.tgz
           ./apache-jmeter-5.6.3/bin/jmeter.sh -n -v
+      # Display files to verify that everything is in place
       - name: Display files
         run: |
           pwd
           ls
+      # Run performance test by using passed test file to run
       - name: Run jmx script
         run: |
           ./apache-jmeter-5.6.3/bin/jmeter.sh -n -t "jmeter-tests/demo-app-all-tests.jmx" -l test_run.jtl -e -o test_report
           mv test_run.jtl test_report/test_run.jtl
+      # Upload jmeter test results as zip
       - name: Upload jmeter test results directory
         uses: actions/upload-artifact@v4
         with:
           name: Test_report
           path: test_report
+      # Display files to verify that everything is in place
       - name: Display files
         run: |
           pwd
@@ -45,6 +64,86 @@ jobs:
           cd test_report
           pwd
           ls
+      # Check if any failures are recorded in the JTL file
+      - name: Parse JMeter results
+        run: |
+          cd test_report
+          failures=$(awk -F',' 'NR > 1 && $8 != "true" {exit 1}' test_run.jtl && echo 0 || echo 1)
+          echo "failures=$failures" >> $GITHUB_ENV
+      # Fail if there is any failure
+      - name: Fail if there are JMeter test failures
+        if: env.failures == '1'
+        run: exit 1
+      # Verify throughput against thresholds
+      - name: Verify throughput
+        run: |
+          cd test_report
+          json=$(cat statistics.json)
+
+          # Define thresholds
+          fast_threshold=350
+          medium_threshold=2
+          slow_threshold=0.8
+          home_threshold=510
+          login_threshold=520
+          user_threshold=150
+          products_threshold=1.5
+          logout_threshold=510
+          home_flow_threshold=1.6
+          login_flow_threshold=1.6
+          user_flow_threshold=1.6
+          products_flow_threshold=1.6
+          logout_flow_threshold=1.4
+
+          # Extract throughput values
+          fast_tp=$(jq -r '.["GET fast"].throughput' <<< "$json")
+          medium_tp=$(jq -r '.["GET medium"].throughput' <<< "$json")
+          slow_tp=$(jq -r '.["GET slow"].throughput' <<< "$json")
+          home_tp=$(jq -r '.["GET home page"].throughput' <<< "$json")
+          login_tp=$(jq -r '.["GET login"].throughput' <<< "$json")
+          user_tp=$(jq -r '.["GET user"].throughput' <<< "$json")
+          products_tp=$(jq -r '.["GET products"].throughput' <<< "$json")
+          logout_tp=$(jq -r '.["GET logout"].throughput' <<< "$json")
+          home_flow_tp=$(jq -r '.["GET home page (flow)"].throughput' <<< "$json")
+          login_flow_tp=$(jq -r '.["GET login (flow)"].throughput' <<< "$json")
+          user_flow_tp=$(jq -r '.["GET user (flow)"].throughput' <<< "$json")
+          products_flow_tp=$(jq -r '.["GET products (flow)"].throughput' <<< "$json")
+          logout_flow_tp=$(jq -r '.["GET logout (flow)"].throughput' <<< "$json")
+
+          echo "GET fast → $fast_tp (threshold: $fast_threshold)"
+          echo "GET medium → $medium_tp (threshold: $medium_threshold)"
+          echo "GET slow → $slow_tp (threshold: $slow_threshold)"
+          echo "GET home page → $home_tp (threshold: $home_threshold)"
+          echo "GET login → $login_tp (threshold: $login_threshold)"
+          echo "GET user → $user_tp (threshold: $user_threshold)"
+          echo "GET products → $products_tp (threshold: $products_threshold)"
+          echo "GET logout → $logout_tp (threshold: $logout_threshold)"
+          echo "GET home page (flow) → $home_flow_tp (threshold: $home_flow_threshold)"
+          echo "GET login (flow) → $login_flow_tp (threshold: $login_flow_threshold)"
+          echo "GET user (flow) → $user_flow_tp (threshold: $user_flow_threshold)"
+          echo "GET products (flow) → $products_flow_tp (threshold: $products_flow_threshold)"
+          echo "GET logout (flow) → $logout_flow_tp (threshold: $logout_flow_threshold)"
+
+          # Validate performance
+          if (( $(echo "$fast_tp >= $fast_threshold" | bc) )) && \
+             (( $(echo "$medium_tp >= $medium_threshold" | bc) )) && \
+             (( $(echo "$slow_tp >= $slow_threshold" | bc) )) && \
+             (( $(echo "$home_tp >= $home_threshold" | bc) )) && \
+             (( $(echo "$login_tp >= $login_threshold" | bc) )) && \
+             (( $(echo "$user_tp >= $user_threshold" | bc) )) && \
+             (( $(echo "$products_tp >= $products_threshold" | bc) )) && \
+             (( $(echo "$logout_tp >= $logout_threshold" | bc) )) && \
+             (( $(echo "$home_flow_tp >= $home_flow_threshold" | bc) )) && \
+             (( $(echo "$login_flow_tp >= $login_flow_threshold" | bc) )) && \
+             (( $(echo "$user_flow_tp >= $user_flow_threshold" | bc) )) && \
+             (( $(echo "$products_flow_tp >= $products_flow_threshold" | bc) )) && \
+             (( $(echo "$logout_flow_tp >= $logout_flow_threshold" | bc) )); then
+              echo "✅ Throughputs are greater than thresholds"
+          else
+              echo "❌ Some throughputs are not greater than thresholds, check above statistics"
+              exit 1
+          fi
+      # Clean up runners from previous runs
       - name: Cleanup
         shell: bash
         run: rm -rf {,.[!.],..?}*
