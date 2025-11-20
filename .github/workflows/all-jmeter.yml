@@ -81,14 +81,14 @@ jobs:
           json=$(cat statistics.json)
 
           # Define thresholds
-          fast_threshold=350
+          fast_threshold=340
           medium_threshold=2
           slow_threshold=0.8
-          home_threshold=510
-          login_threshold=520
+          home_threshold=300
+          login_threshold=320
           user_threshold=150
           products_threshold=1.5
-          logout_threshold=510
+          logout_threshold=330
           home_flow_threshold=1.6
           login_flow_threshold=1.6
           user_flow_threshold=1.6
