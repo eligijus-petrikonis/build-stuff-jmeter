@@ -29,14 +29,14 @@ jobs:
           java-version: "21"
       # Test that application is accessible
       - name: Test curl
-        run: curl http://build-stuff-jmeter-test.eu-4.evennode.com/
+        run: curl -f http://build-stuff-jmeter-test.eu-4.evennode.com/
       # Checkout repository
       - name: Checkout
         uses: actions/checkout@v5.0.0
       # Download and install JMeter
       - name: Install Jmeter and check version
         run: |
-          curl https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz --output jmeter.tgz
+          curl -f https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz --output jmeter.tgz
           ls
           tar -xf jmeter.tgz
           ./apache-jmeter-5.6.3/bin/jmeter.sh -n -v
@@ -81,14 +81,14 @@ jobs:
           json=$(cat statistics.json)
 
           # Define thresholds
-          fast_threshold=350
+          fast_threshold=340
           medium_threshold=2
           slow_threshold=0.8
-          home_threshold=510
-          login_threshold=520
+          home_threshold=300
+          login_threshold=320
           user_threshold=150
           products_threshold=1.5
-          logout_threshold=510
+          logout_threshold=330
           home_flow_threshold=1.6
           login_flow_threshold=1.6
           user_flow_threshold=1.6

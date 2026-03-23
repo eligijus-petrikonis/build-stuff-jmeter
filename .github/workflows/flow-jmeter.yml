@@ -16,12 +16,12 @@ jobs:
           distribution: "temurin"
           java-version: "21"
       - name: Test curl
-        run: curl http://build-stuff-jmeter-test.eu-4.evennode.com/
+        run: curl -f http://build-stuff-jmeter-test.eu-4.evennode.com/
       - name: Checkout
         uses: actions/checkout@v5.0.0
       - name: Install Jmeter and check version
         run: |
-          curl https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz --output jmeter.tgz
+          curl -f https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz --output jmeter.tgz
           ls
           tar -xf jmeter.tgz
           ./apache-jmeter-5.6.3/bin/jmeter.sh -n -v
